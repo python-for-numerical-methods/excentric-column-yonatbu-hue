@@ -1,3 +1,5 @@
+import numpy as np
+from scipy.optimize import bisect
 def find_critical_load(L, E, A, r, c, e, sigma_allow):
     """
     L: אורך במ"מ
@@ -10,19 +12,19 @@ def find_critical_load(L, E, A, r, c, e, sigma_allow):
 
     Return: העומס P בניוטון (float)
     """
- def sigma_max(P):
-        """
-        Maximum stress according to the secant formula.
-        """
-
-        # Argument of secant function
-        theta = (L / (2 * r)) * np.sqrt(P / (E * A))
-
-        # sec(x) = 1 / cos(x)
-        sec_theta = 1 / np.cos(theta)
-
-        return (P / A) * (1 + (e * c / r**2) * sec_theta)
-
+    def sigma_max(P):
+            """
+            Maximum stress according to the secant formula.
+            """
+    
+            # Argument of secant function
+            theta = (L / (2 * r)) * np.sqrt(P / (E * A))
+    
+            # sec(x) = 1 / cos(x)
+            sec_theta = 1 / np.cos(theta)
+    
+            return (P / A) * (1 + (e * c / r**2) * sec_theta)
+    
     def f(P):
         """
         Root function:
@@ -30,7 +32,7 @@ def find_critical_load(L, E, A, r, c, e, sigma_allow):
         """
         return sigma_max(P) - sigma_allow
 
-    # Euler buckling load (used as upper bound)
+    # Euler buckling load (upper bound)
     I = A * r**2
     P_euler = (np.pi**2 * E * I) / (L**2)
 
@@ -38,7 +40,7 @@ def find_critical_load(L, E, A, r, c, e, sigma_allow):
     P_min = 1e-6
     P_max = 0.99 * P_euler
 
-    # Numerical solution
+    # Solve numerically
     P_critical = bisect(f, P_min, P_max, xtol=1e-6)
 
-    return P_critical
+    return float(P_critical)
